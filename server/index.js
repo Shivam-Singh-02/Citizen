@@ -48,13 +48,61 @@ app.get('/api/reports', (req, res) => {
   res.status(200).json(db.reports);
 });
 
+// Endpoint to update report status to 'Resolved'
+app.put('/api/reports/:id/resolve', (req, res) => {
+  const reportId = parseInt(req.params.id);
+  const db = readDb();
+  const reportIndex = db.reports.findIndex(r => r.id === reportId);
+
+  if (reportIndex === -1) {
+    return res.status(404).send('Report not found.');
+  }
+
+  db.reports[reportIndex].status = 'Resolved';
+  writeDb(db);
+
+  res.status(200).json(db.reports[reportIndex]);
+});
+
+// Endpoint to update report status to 'Reported' (Reopen)
+app.put('/api/reports/:id/reopen', (req, res) => {
+  const reportId = parseInt(req.params.id);
+  const db = readDb();
+  const reportIndex = db.reports.findIndex(r => r.id === reportId);
+
+  if (reportIndex === -1) {
+    return res.status(404).send('Report not found.');
+  }
+
+  db.reports[reportIndex].status = 'Reported';
+  writeDb(db);
+
+  res.status(200).json(db.reports[reportIndex]);
+});
+
+// Endpoint to delete a report
+app.delete('/api/reports/:id', (req, res) => {
+  const reportId = parseInt(req.params.id);
+  const db = readDb();
+  const initialLength = db.reports.length;
+  db.reports = db.reports.filter(r => r.id !== reportId);
+  
+  if (db.reports.length === initialLength) {
+    return res.status(404).send('Report not found.');
+  }
+
+  writeDb(db);
+  res.status(204).send(); // No content for successful deletion
+});
+
+
 // Endpoint to handle the report submission
 app.post('/api/report', upload.single('image'), async (req, res) => {
-  const { latitude, longitude } = req.body;
+  const { latitude, longitude, issueDescription } = req.body; // Added issueDescription
   const image = req.file;
 
-  if (!image || !latitude || !longitude) {
-    return res.status(400).send('Missing image or location data.');
+  if (!image || !latitude || !longitude || !issueDescription) { // Added issueDescription validation
+    return res.status(400).send('Missing image, location, or issue description data.');
   }
 
   try {
@@ -82,6 +130,7 @@ app.post('/api/report', upload.single('image'), async (req, res) => {
       image: image.filename,
       civicData,
       status: 'Reported', // Initial status
+      issueDescription, // Added issueDescription
     };
 
     const db = readDb();

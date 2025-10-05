@@ -1,3 +1,19 @@
 {
-  "reports": []
+  "reports": [
+    {
+      "id": 1700000000000,
+      "timestamp": "2025-10-05T10:00:00.000Z",
+      "latitude": "18.571467",
+      "longitude": "73.907222",
+      "address": "Airport New Road, Ward 6, Pune City, Pune, Maharashtra, 411011, India.",
+      "image": "dummy_pothole.jpg",
+      "civicData": {
+        "mla": "Bapusaheb Tukaram Pathare (Wadgaon Sheri)",
+        "mp": "Murlidhar Mohol (Pune)",
+        "municipalCorporation": "Pune Municipal Corporation (PMC)"
+      },
+      "status": "Reported",
+      "issueDescription": "Large pothole causing traffic hazards near the main road."
+    }
+  ]
 }

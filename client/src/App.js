@@ -10,6 +10,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [civicData, setCivicData] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false); // New state for dashboard
+  const [issueDescription, setIssueDescription] = useState(''); // New state for issue description
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -17,6 +18,10 @@ function App() {
     setError(null);
     setAddress(null);
     setCivicData(null);
+  };
+
+  const handleIssueDescriptionChange = (event) => {
+    setIssueDescription(event.target.value);
   };
 
   const handleReport = () => {
@@ -46,6 +51,7 @@ function App() {
         formData.append('image', selectedFile);
         formData.append('latitude', latitude);
         formData.append('longitude', longitude);
+        formData.append('issueDescription', issueDescription); // Added issueDescription
 
         fetch('http://localhost:3001/api/report', {
           method: 'POST',
@@ -90,14 +96,16 @@ function App() {
 
   const handleDraftEmail = () => {
     if (!civicData || !address || !location) return;
+    if (!issueDescription.trim()) { // Validate issue description
+      setError('Please enter a description of the issue.');
+      return;
+    }
 
     const recipients = [
       'info@punecorporation.org',
-      'mla.pune@placeholder.gov.in', // Placeholder
-      'mp.pune@placeholder.gov.in',   // Placeholder
     ].join(',');
 
-    const subject = `Formal Complaint & Request for Information: Civic Issue at ${address}`;
+    const subject = `Formal Complaint & Request for Information: Civic Issue - ${issueDescription} at ${address}`;
 
     const body = `To the Concerned Department Head,
 
@@ -105,7 +113,7 @@ This is a formal complaint regarding a significant civic issue requiring your im
 Location: ${address}
 GPS Coordinates: (Latitude: ${location.latitude}, Longitude: ${location.longitude})
 
-The issue is a [Please specify issue, e.g., large pothole, broken streetlight, uncleared garbage]. This poses a direct safety hazard to the residents of this area and is a failure of public maintenance. A photograph of the issue is attached for your reference.
+The specific issue is: ${issueDescription}. This poses a direct safety hazard to the residents of this area and is a failure of public maintenance. A photograph of the issue is attached for your reference.
 
 The responsible authorities for this jurisdiction have been identified as:
 - MLA: ${civicData.mla}
@@ -156,6 +164,17 @@ This complaint was generated and filed via the Citizen Complaint Portal.
               <div className="mb-3">
                 <label htmlFor="formFile" className="form-label">Upload or Take a Picture</label>
                 <input className="form-control" type="file" id="formFile" onChange={handleFileChange} accept="image/*" capture="environment" />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="issueDescription" className="form-label">Describe the Issue</label>
+                <textarea
+                  className="form-control"
+                  id="issueDescription"
+                  rows="3"
+                  value={issueDescription}
+                  onChange={handleIssueDescriptionChange}
+                  placeholder="e.g., Large pothole causing traffic hazards, broken streetlight near school entrance."
+                ></textarea>
               </div>
               <button className="btn btn-primary" onClick={handleReport} disabled={loading}>
                 {loading ? 'Submitting...' : 'Get Location & Submit Report'}
